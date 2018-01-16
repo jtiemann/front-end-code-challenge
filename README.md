@@ -1,6 +1,39 @@
 Room Key Front End Development Challenge
 ========================================
 
+Room Key Team,
+
+I have written a short and hopefully concise example of componentization in a
+reactive style using Observables and simple DOM manipulation. I have included 
+examples of media query, pointfree style, immutability, curried functions and
+composition. 
+
+Below is a short list of other code, that may be of interest, displaying 
+experience in componentization, asynchronicity, clojure/datomic and play.
+
+I hope you find the code interesting and indicative of my desire to write enterprise 
+code that will stand the test of time/maintenance/expandability.
+
+Thanks,
+
+--Jon
+
+
+OTHER JAVASCRIPT EXAMPLES:
+https://github.com/jtiemann/randr
+https://github.com/jtiemann/node-poll-example
+https://github.com/jtiemann/theory-example
+
+CLOJURE/JS Contacts example::
+https://bitbucket.org/jtiemann11/simpledatomic
+https://bitbucket.org/jtiemann11/simpledatomicserver
+
+Slide Shows:
+Transformations JS: http://tbone.dyndns-ip.com:8000/index-js.html#/
+Clojure/Datomic Example: http://tbone.dyndns-ip.com:8000 
+
+
+
 Greetings and salutations!
 
 Thanks for your interest in joining the team here at Room Key. Part of our
