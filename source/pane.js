@@ -41,9 +41,9 @@ const hasUserRatingGreaterThan = (rating) => (h) => h.user_rating > rating
 
 const applyFilterSettings = (filters) => (hotel) => {
 	 return filters.map((f)=>{
-										    if (!Array.isArray(f)) return f(hotel) 
-										    return f.filter((ors)=>ors(hotel)).length > 0 ? true : false
-											})
+			if (!Array.isArray(f)) return f(hotel) 
+			return f.filter((ors)=>ors(hotel)).length > 0 ? true : false
+		       })
 	               .every((x)=> x == true) 
 }
 
@@ -54,21 +54,21 @@ var filters = [hasUserRatingGreaterThan(3.5), [hasMiniBar(), hasFreeBfast()]]
 /////////////////////
 
 const fetchLocation$ = Observable.from(fetchLocation("Charlottesville"))
-																 .mergeMap((res) => Observable.from(res.json()) )
-																 .map((fetchRes) => fetchRes.locations[0].id)
+                                 .mergeMap((res) => Observable.from(res.json()) )
+				 .map((fetchRes) => fetchRes.locations[0].id)
 
 const fetchHotels$ = fetchLocation$.mergeMap((loc) => Observable.from(fetchHotels(loc)) )
-																	 .mergeMap((res) => Observable.from(res.json()) )
-																	 .mergeMap((res)=>Observable.from(res.data))
-																	 .filter(applyFilterSettings(filters))
-				        	      					 //.map((filteredHotels)=>filteredHotels.map((h)=>renderComponent(h)("favorites")))   
+                                   .mergeMap((res) => Observable.from(res.json()) )
+                                   .mergeMap((res)=>Observable.from(res.data))
+                                   .filter(applyFilterSettings(filters))
+				   //.map((filteredHotels)=>filteredHotels.map((h)=>renderComponent(h)("favorites")))   
                                    //fetchHotels$.subscribe(console.log)
 const renderHotels$ = fetchHotels$.map((filteredHotel)=>renderComponent(filteredHotel)("myFavorites"))  
 
 const HotelDescription = (event) =>  Observable.from(fetchHotel(event.target.id))
-																				       .mergeMap((res) => Observable.from(res.json()) )
-			                                         .map((aHotel)=>alert(aHotel.description))
-			                                         .subscribe()
+                                               .mergeMap((res) => Observable.from(res.json()) )
+			                       .map((aHotel)=>alert(aHotel.description))
+			                       .subscribe()
                  
 //////////////////////
 /// END RX DEMO //////
@@ -79,21 +79,21 @@ const HotelDescription = (event) =>  Observable.from(fetchHotel(event.target.id)
 ///////////////////////////////////
 
 const renderComponent = (h) => (place="myFavorites") => {
-	//console.log(h)
-	const id = Id()
-	let wrapper = document.createElement('div')
-	wrapper.setAttribute("id", id)
-	wrapper.classList.add("wrapper")
+  //console.log(h)
+  const id = Id()
+  let wrapper = document.createElement('div')
+  wrapper.setAttribute("id", id)
+  wrapper.classList.add("wrapper")
 
-	let parts = [primaryPhotoEl(h.primary_photo, h, showAllPics), 
+  let parts = [primaryPhotoEl(h.primary_photo, h, showAllPics), 
                wrapRI(h),
-	             tripAdvisorReviewsEl(h), 
-	             nameEl(h),
-	             separatorEl()]
+	       tripAdvisorReviewsEl(h), 
+	       nameEl(h),
+	       separatorEl()]
  
-	parts.forEach((unit) => wrapper.append(unit))
-	document.getElementById(place).append(wrapper)
-	return h
+  parts.forEach((unit) => wrapper.append(unit))
+  document.getElementById(place).append(wrapper)
+  return h
 }
 
 const wrap = (el, wrapper) => {
@@ -104,9 +104,9 @@ const wrap = (el, wrapper) => {
 const imageUrl = (photo, size="200x150") => `https://d29u3c1wxehloe.cloudfront.net${photo.id}${size}.jpg`
 
 const imageBuilderEl = (p) => {
-	let el  = document.createElement("img")
-	el.setAttribute("src", imageUrl(p))
-	el.classList.add("imageBuilderEl")
+  let el  = document.createElement("img")
+  el.setAttribute("src", imageUrl(p))
+  el.classList.add("imageBuilderEl")
   return el
 }
 
@@ -116,13 +116,13 @@ const showAllPics = (e) => imageEls(JSON.parse(e.target.dataset.pics))
                            .forEach((picEl)=>e.target.parentNode.insertBefore(picEl, e.target.nextSibling))
 
 const primaryPhotoEl = (primaryPhoto, h, display) => {
-	let el = document.createElement("img")
-	el.setAttribute("src", imageUrl(primaryPhoto))
-	el.setAttribute("id", h.udicode)
-	el.setAttribute("data-pics", JSON.stringify(h.photos))
-	el.classList.add("primaryPhotoEl")
-	el.addEventListener("click", display, {once:true})
-	el.addEventListener("dblclick", HotelDescription)
+  let el = document.createElement("img")
+  el.setAttribute("src", imageUrl(primaryPhoto))
+  el.setAttribute("id", h.udicode)
+  el.setAttribute("data-pics", JSON.stringify(h.photos))
+  el.classList.add("primaryPhotoEl")
+  el.addEventListener("click", display, {once:true})
+  el.addEventListener("dblclick", HotelDescription)
   return el
 }
 
@@ -133,37 +133,37 @@ const separatorEl = () => {
 }
 
 const nameEl = (h) => {
-	let el  = document.createElement("h4")
-	el.classList.add("nameEl")
-	el.innerHTML = h.name
-	return el
+  let el  = document.createElement("h4")
+  el.classList.add("nameEl")
+  el.innerHTML = h.name
+  return el
 }
 
 const tripAdvisorReviewsEl = (h) => {
-	let el  = document.createElement("ul")
-	el.classList.add("tripAdvisorReviewsEl")
-	el.innerHTML = `${h.tripadvisor.reviews.reduce((acc,review)=>acc += "<li>"+review.title+"</li>","")}`
+  let el  = document.createElement("ul")
+  el.classList.add("tripAdvisorReviewsEl")
+  el.innerHTML = `${h.tripadvisor.reviews.reduce((acc,review)=>acc += "<li>"+review.title+"</li>","")}`
   return el
 }
 
 const reviewNumberEl = (h) => {
-	let el  = document.createElement("span")
+  let el  = document.createElement("span")
   el.innerHTML = h.user_rating
   return el
 }
 
 const indicativePriceEl = (h) => {
-	let el  = document.createElement("span")
+  let el  = document.createElement("span")
   el.innerHTML = `@$${h.indicative_rate}`
   return el
 }
 
 const wrapRI = (h) => {
-	let el = document.createElement('p')
-	el.classList.add("wrapRI")
-	el.append(reviewNumberEl(h))
-	el.append(indicativePriceEl(h))
-	return el
+  let el = document.createElement('p')
+  el.classList.add("wrapRI")
+  el.append(reviewNumberEl(h))
+  el.append(indicativePriceEl(h))
+  return el
 }
 
 export {Id, renderHotels$}
