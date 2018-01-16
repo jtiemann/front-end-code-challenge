@@ -8,9 +8,12 @@ import 'rxjs/add/operator/startWith'
 import 'rxjs/add/operator/scan'
 import 'rxjs/add/operator/do'
 import 'rxjs/add/operator/take'
+import 'rxjs/add/operator/delay'
+import 'rxjs/add/operator/filter'
 import 'rxjs/add/operator/withLatestFrom'
 import 'rxjs/add/observable/fromEvent'
 import 'rxjs/add/observable/from'
+import 'rxjs/add/observable/interval'
 import { Id, identity } from './utils'
 require('./pane.css')
 
@@ -18,9 +21,33 @@ require('./pane.css')
 /// ASYNC DATA FUNCTIONS ////
 /////////////////////////////
 
-const fetchLocation = (zip) => fetch(`autofill?query=${zip}`, {headers: {Accept: 'application/json'}})
+const fetchLocation = (cityOrZip) => fetch(`autofill?query=${cityOrZip}`, {headers: {Accept: 'application/json'}})
 
 const fetchHotels = (location) => fetch(`/locations/${location}/hotels`, {headers: {Accept: 'application/json'}})
+
+const fetchHotel = (udicode) => fetch(`hotels/${udicode}?checkIn=2018-02-08&checkOut=2018-02-10&currency=USD&guests=2&rooms=1`, {headers: {Accept: 'application/json'}})
+
+///////////////
+/// FILTERS ///
+///////////////
+
+const hasAmenity = (amenity) => (h) => h.amenities.filter(({code: x})=>{return x==amenity}).length > 0
+
+const hasMiniBar = () => hasAmenity("MNBAR")
+
+const hasFreeBfast = () => hasAmenity("FBKFST")
+
+const hasUserRatingGreaterThan = (rating) => (h) => h.user_rating > rating
+
+const applyFilterSettings = (filters) => (hotel) => {
+	 return filters.map((f)=>{
+										    if (!Array.isArray(f)) return f(hotel) 
+										    return f.filter((ors)=>ors(hotel)).length > 0 ? true : false
+											})
+	               .every((x)=> x == true) 
+}
+
+var filters = [hasUserRatingGreaterThan(3.5), [hasMiniBar(), hasFreeBfast()]]
 
 /////////////////////
 /// BEGIN RX DEMO ///
@@ -32,35 +59,26 @@ const fetchLocation$ = Observable.from(fetchLocation("Charlottesville"))
 
 const fetchHotels$ = fetchLocation$.mergeMap((loc) => Observable.from(fetchHotels(loc)) )
 																	 .mergeMap((res) => Observable.from(res.json()) )
-																	 .map((res)=>res.data)
-																	 .map((hotels)=>hotels.filter((h) => hasUserRatingGreaterThan(3.5,h)))
-				        	      					 .map((hotels)=>hotels.filter((h) => hasFreeBfast(h) || hasMiniBar(h) ))
-				        	      					//.map((filteredHotels)=>filteredHotels.map((h)=>renderComponent(h)("favorites")))   
-                                  //fetchHotels$.subscribe()
-const renderHotels$ = fetchHotels$.map((filteredHotels)=>filteredHotels)
-				        	               .map((filteredHotels)=>filteredHotels.map((h)=>renderComponent(h)("favorites")))   
+																	 .mergeMap((res)=>Observable.from(res.data))
+																	 .filter(applyFilterSettings(filters))
+				        	      					 //.map((filteredHotels)=>filteredHotels.map((h)=>renderComponent(h)("favorites")))   
+                                   //fetchHotels$.subscribe(console.log)
+const renderHotels$ = fetchHotels$.map((filteredHotel)=>renderComponent(filteredHotel)("myFavorites"))  
 
+const HotelDescription = (event) =>  Observable.from(fetchHotel(event.target.id))
+																				       .mergeMap((res) => Observable.from(res.json()) )
+			                                         .map((aHotel)=>alert(aHotel.description))
+			                                         .subscribe()
+                 
 //////////////////////
 /// END RX DEMO //////
 //////////////////////
-
-///////////////
-/// FILTERS ///
-///////////////
-
-const hasAmenity = (amenity, h) => h.amenities.filter(({code: x})=>{return x==amenity}).length > 0
-
-const hasMiniBar = (h) => hasAmenity("MNBAR", h)
-
-const hasFreeBfast = (h) => hasAmenity("FBKFST", h)
-
-const hasUserRatingGreaterThan = (rating, h) => h.user_rating > rating
 
 ///////////////////////////////////
 /// RENDER ELEMENTS AND HELPERS ///
 ///////////////////////////////////
 
-const renderComponent = (h) => (place="favorites") => {
+const renderComponent = (h) => (place="myFavorites") => {
 	//console.log(h)
 	const id = Id()
 	let wrapper = document.createElement('div')
@@ -92,10 +110,7 @@ const imageBuilderEl = (p) => {
   return el
 }
 
-const imageEls = (photos) => {
-	if (!Array.isArray(photos) )  return imageBuilderEl(photos)
-	else return photos.map((p)=> imageBuilderEl(p)) 
-}
+const imageEls = (photos) => photos.map((p)=> imageBuilderEl(p))
 
 const showAllPics = (e) => imageEls(JSON.parse(e.target.dataset.pics))
                            .forEach((picEl)=>e.target.parentNode.insertBefore(picEl, e.target.nextSibling))
@@ -103,10 +118,11 @@ const showAllPics = (e) => imageEls(JSON.parse(e.target.dataset.pics))
 const primaryPhotoEl = (primaryPhoto, h, display) => {
 	let el = document.createElement("img")
 	el.setAttribute("src", imageUrl(primaryPhoto))
-	el.setAttribute("id", Id())
+	el.setAttribute("id", h.udicode)
 	el.setAttribute("data-pics", JSON.stringify(h.photos))
 	el.classList.add("primaryPhotoEl")
 	el.addEventListener("click", display, {once:true})
+	el.addEventListener("dblclick", HotelDescription)
   return el
 }
 
@@ -161,7 +177,7 @@ example: const fetchHotels = () => fetch('/locations/0nN94iG4S04s5cO05g9krVMw/ho
 
 const imageUrl = (photo) => `https://d29u3c1wxehloe.cloudfront.net${photo.id}/[200x150|500x375|big].jpg`
 
-NOWORKS! const fetchHotel = (loc, udicode) => fetch(`/locations/${loc}/hotels/${udicode}`, {headers: {Accept: 'application/json'}})
+const fetchHotel = (udicode) => fetch(`hotels/${udicode}?checkIn=2018-02-08&checkOut=2018-02-10&currency=USD&guests=2&rooms=1`, {headers: {Accept: 'application/json'}})
 
 RANDOM Hotel fetchHotels$.subscribe((hotels)=>console.log(hotels[Math.floor(Math.random()*hotels.length)]))
 

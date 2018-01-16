@@ -1,6 +1,8 @@
+import $ from 'jquery';
 import { Id, identity } from './utils'
-import {click$, renderHotels$} from './pane'
+import {renderHotels$} from './pane'
 import {clickCounter$} from './clickCounter'
+
 require('./index.css')
 
 function updateTime() {
@@ -11,6 +13,4 @@ updateTime()
 setInterval(updateTime, 1000)
 
 renderHotels$.subscribe()
-
 clickCounter$.subscribe()
-
